@@ -13,7 +13,7 @@ import (
 
 // TODO Turn this allow list into config or command line input
 var (
-	allowPrefixes = []string{"github.com/Stacky32"}
+	allowPrefixes = []string{"github.com/Stacky32", "bytes"}
 )
 
 var Analyzer = &analysis.Analyzer{

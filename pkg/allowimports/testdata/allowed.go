@@ -1,7 +1,7 @@
 package testdata
 
-import "github.com/Stacky32/go-analyser/pkg/allowimports"
+import "bytes"
 
-func Do2() {
-	_ = allowimports.Analyzer
+func Do3() {
+	_ = bytes.Buffer{}
 }

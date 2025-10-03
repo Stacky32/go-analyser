@@ -8,7 +8,5 @@ import (
 )
 
 func TestAnalyzer(t *testing.T) {
-	td := analysistest.TestData()
-	t.Logf("Blah: %s\n", td)
-	analysistest.Run(t, td, allowimports.Analyzer)
+	analysistest.Run(t, analysistest.TestData(), allowimports.Analyzer)
 }
