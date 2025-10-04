@@ -1,7 +1,6 @@
 build_dir = ./bin
-entrypoint = ./cmd/allowimports/main.go
 binary_name = allowimports
-here = $(realpath .)
+wd = $(realpath .)
 
 .PHONY: build
 build:
@@ -13,12 +12,15 @@ test:
 
 .PHONY: allowimports
 allowimports:
-	go build -v -o ${build_dir}/${binary_name} ${entrypoint}
+	go build -v -o ${build_dir}/${binary_name} ./cmd/allowimports
 
 .PHONY: plugin
 plugin:
-	go build -buildmode=plugin -o bin/allowimports.so ./cmd/plugin
+	go build -buildmode=plugin -tags=plugin -o ${build_dir}/${binary_name}.so ./cmd/plugin
 
 .PHONY: demo
 demo: allowimports
-	go vet -vettool=${build_dir}/${binary_name} -config=${here}/test/allowimports/allow.yaml ./test/allowimports/
+	go vet -vettool=${build_dir}/${binary_name} -config=${wd}/test/allowimports/allow.yaml ./test/allowimports/
+
+.PHONY: all
+all: build test demo
