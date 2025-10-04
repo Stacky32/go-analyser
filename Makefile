@@ -15,6 +15,10 @@ test:
 allowimports:
 	go build -v -o ${build_dir}/${binary_name} ${entrypoint}
 
+.PHONY: plugin
+plugin:
+	go build -buildmode=plugin -o bin/allowimports.so ./cmd/plugin
+
 .PHONY: demo
 demo: allowimports
 	go vet -vettool=${build_dir}/${binary_name} -config=${here}/test/allowimports/allow.yaml ./test/allowimports/

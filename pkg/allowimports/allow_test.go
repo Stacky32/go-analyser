@@ -11,6 +11,7 @@ import (
 func TestAnalyzer(t *testing.T) {
 	td := analysistest.TestData()
 	configPath := filepath.Join(td, "allow.yaml")
+
 	if err := allowimports.Analyzer.Flags.Set("config", configPath); err != nil {
 		t.Fatalf("Failed to set flag `-config`: %+v", err)
 	}

@@ -1,2 +1,4 @@
 allow:
   - bytes
+  - strings
+  - slices
