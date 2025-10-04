@@ -1,6 +1,7 @@
 package allowimports
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"os"
@@ -9,11 +10,16 @@ import (
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
 	"golang.org/x/tools/go/ast/inspector"
+	"gopkg.in/yaml.v3"
 )
 
-// TODO Turn this allow list into config or command line input
+type Config struct {
+	Allow []string `yaml:"allow"`
+}
+
 var (
-	allowPrefixes = []string{"github.com/Stacky32", "bytes"}
+	configPath    string
+	allowPrefixes []string
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -23,7 +29,23 @@ var Analyzer = &analysis.Analyzer{
 	Run:      run,
 }
 
+func init() {
+	Analyzer.Flags.StringVar(&configPath, "config", "", "path to YAML config file (required)")
+}
+
 func run(p *analysis.Pass) (any, error) {
+	if configPath == "" {
+		return nil, errors.New("missing flag `-config` - YAML config required")
+	}
+
+	if len(allowPrefixes) == 0 {
+		cfg, err := loadConfig(configPath)
+		if err != nil {
+			return nil, err
+		}
+		allowPrefixes = cfg.Allow
+	}
+
 	filter := []ast.Node{
 		(*ast.ImportSpec)(nil),
 	}
@@ -38,8 +60,10 @@ func run(p *analysis.Pass) (any, error) {
 		}
 
 		path := strings.Trim(imp.Path.Value, `"`)
-		if isAllowed(path) {
-			return
+		for _, p := range allowPrefixes {
+			if strings.HasPrefix(path, p) {
+				return
+			}
 		}
 
 		p.Reportf(imp.Pos(), "importing forbidden package %q", path)
@@ -48,12 +72,16 @@ func run(p *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-func isAllowed(path string) bool {
-	for _, p := range allowPrefixes {
-		if strings.HasPrefix(path, p) {
-			return true
-		}
+func loadConfig(path string) (*Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("reading config file: %w", err)
 	}
 
-	return false
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("parsing config: %w", err)
+	}
+
+	return &cfg, nil
 }
